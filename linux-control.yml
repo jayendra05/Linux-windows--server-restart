@@ -1,0 +1,28 @@
+name: Linux Server Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Select Action"
+        required: true
+        type: choice
+        options:
+          - start
+          - stop
+          - restart
+
+jobs:
+  control:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute Command on Linux Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.LINUX_HOST }}
+          username: ${{ secrets.LINUX_USER }}
+          password: ${{ secrets.LINUX_PASSWORD }}
+          script: |
+            echo "Selected action: ${{ github.event.inputs.action }}"
+            sudo systemctl ${{ github.event.inputs.action }} nginx
