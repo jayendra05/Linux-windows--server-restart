@@ -24,18 +24,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set Server Details
+      - name: Set Host
         run: |
           echo "HOST=${{ secrets.LINUX1_HOST }}" >> $GITHUB_ENV
 
-      - name: Execute Action
+      - name: Connect and Test
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "Server: ${{ github.event.inputs.server }}"
-            echo "Action: ${{ github.event.inputs.action }}"
+            echo "=================================="
+            echo "Selected Server : ${{ github.event.inputs.server }}"
+            echo "Selected Action : ${{ github.event.inputs.action }}"
+            echo "=================================="
 
-            sudo systemctl ${{ github.event.inputs.action }} nginx
+            echo "Hostname:"
+            hostname
+
+            echo "Current User:"
+            whoami
+
+            echo "Uptime:"
+            uptime
+
+            echo "OS Details:"
+            cat /etc/os-release || uname -a
+
+            echo "Running Services:"
+            systemctl list-units --type=service --state=running --no-pager | head -20
