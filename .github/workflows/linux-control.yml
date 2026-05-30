@@ -3,6 +3,13 @@ name: Linux Server Control
 on:
   workflow_dispatch:
     inputs:
+      server:
+        description: "Select Server"
+        required: true
+        type: choice
+        options:
+          - linux1
+
       action:
         description: "Select Action"
         required: true
@@ -17,12 +24,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Execute Command on Linux Server
+      - name: Set Server Details
+        run: |
+          echo "HOST=${{ secrets.LINUX1_HOST }}" >> $GITHUB_ENV
+
+      - name: Execute Action
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.LINUX_HOST }}
-          username: ${{ secrets.LINUX_USER }}
-          password: ${{ secrets.LINUX_PASSWORD }}
+          host: ${{ env.HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "Selected action: ${{ github.event.inputs.action }}"
+            echo "Server: ${{ github.event.inputs.server }}"
+            echo "Action: ${{ github.event.inputs.action }}"
+
             sudo systemctl ${{ github.event.inputs.action }} nginx
