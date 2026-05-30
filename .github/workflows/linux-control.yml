@@ -1,4 +1,4 @@
-name: Linux Server Control
+name: Linux Server Power Control
 
 on:
   workflow_dispatch:
@@ -15,42 +15,33 @@ on:
         required: true
         type: choice
         options:
-          - start
-          - stop
+          - status
           - restart
+          - stop
 
 jobs:
   control:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set Host
-        run: |
-          echo "HOST=${{ secrets.LINUX1_HOST }}" >> $GITHUB_ENV
-
-      - name: Connect and Test
+      - name: Execute on Linux Server
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ env.HOST }}
+          host: ${{ secrets.LINUX1_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "=================================="
-            echo "Selected Server : ${{ github.event.inputs.server }}"
-            echo "Selected Action : ${{ github.event.inputs.action }}"
-            echo "=================================="
+            echo "Server: ${{ github.event.inputs.server }}"
+            echo "Action: ${{ github.event.inputs.action }}"
 
-            echo "Hostname:"
-            hostname
+            if [ "${{ github.event.inputs.action }}" = "status" ]; then
+              hostname
+              uptime
 
-            echo "Current User:"
-            whoami
+            elif [ "${{ github.event.inputs.action }}" = "restart" ]; then
+              sudo reboot
 
-            echo "Uptime:"
-            uptime
+            elif [ "${{ github.event.inputs.action }}" = "stop" ]; then
+              sudo shutdown -h now
 
-            echo "OS Details:"
-            cat /etc/os-release || uname -a
-
-            echo "Running Services:"
-            systemctl list-units --type=service --state=running --no-pager | head -20
+            fi
